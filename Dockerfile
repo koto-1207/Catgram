@@ -1,6 +1,10 @@
 # richarvey/nginx-php-fpmをベースとする
 FROM richarvey/nginx-php-fpm:latest
 
+# アプリケーション配置ディレクトリ
+WORKDIR /var/www/html
+
+# アプリケーションコードをコンテナにコピー
 COPY . .
 
 # Image config
@@ -18,7 +22,14 @@ ENV LOG_CHANNEL stderr
 # Allow composer to run as root
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
+# Composer で PHP 依存関係をインストール
+RUN composer install --no-dev --optimize-autoloader
+
 # Install npm for building frontend assets
 RUN apk update && apk add --no-cache npm
 
+# フロントエンドをビルド
+RUN npm install && npm run build
+
+# richarvey ベースイメージの起動スクリプト
 CMD ["/start.sh"]
